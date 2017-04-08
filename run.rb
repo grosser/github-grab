@@ -1,15 +1,19 @@
 require "bundler/organization_audit/repo"
 
-token = ARGV[0]
+org = ARGV[0] || raise('need org as first argument')
+token = ARGV[1] || raise('need github token as second argument')
 
-repos = Bundler::OrganizationAudit::Repo.all(:organization => "zendesk", :token => token)
+repos = Bundler::OrganizationAudit::Repo.all(organization: org, token: token)
 puts "#{repos.size} repos"
 
-names = repos.select do |repo|
-  puts repo.project
-  content = repo.content(".travis.yml") rescue nil
-  puts content
-  content.to_s[/code_climate/]
-end.map(&:project)
+repos = repos.map do |repo|
+  begin
+    next unless content = repo.content("Dockerfile.build")
+    puts "FOUND #{repo.project}\n#{content}"
+    [repo.project, content]
+  rescue
+    puts "ERROR #{repo.project} #{$!}"
+  end
+end.compact
 
-puts names
+puts repos.size
