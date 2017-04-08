@@ -1,4 +1,4 @@
-require "bundler/organization_audit/repo.rb"
+require "bundler/organization_audit/repo"
 
 token = ARGV[0]
 
